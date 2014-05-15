@@ -138,7 +138,7 @@ template '/etc/keystone/keystone.conf' do
     bootstrap_token: bootstrap_token,
     memcache_servers: memcache_servers,
     public_endpoint: public_endpoint,
-    public_port: identity_endpoint.port,
+    public_port: bind_endpoint.port || identity_endpoint.port,
     admin_endpoint: admin_endpoint,
     admin_port: identity_admin_endpoint.port,
     ldap: node['openstack']['identity']['ldap'],
