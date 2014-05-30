@@ -20,51 +20,8 @@
 # limitations under the License.
 #
 
-require 'uri'
-
 class ::Chef::Recipe # rubocop:disable Documentation
   include ::Openstack
-end
-
-# Install python keystone libraries needed for generating PKI keys
-package "python-keystone"
-
-# Copy keystone-manage bindary to a location where we will run it
-#execute "Fetching keystone-manage binary" do
-#  cwd '/tmp'
-#  command "wget https://github.com/openstack/keystone/blob/stable/havana/bin/keystone-manage && chmod 755 keystone-manage"
-#  not_if { ::File.exists?("/tmp/keystone-manage")}
-#end
-remote_file '/tmp/keystone-manage' do
-  source "https://github.com/openstack/keystone/blob/stable/havana/bin/keystone-manage"
-  mode 0755
-end
-
-def copy_file_to_web_share(uri)
-  uri = URI.parse('http://192.168.112.11/cblr/localmirror/substructure/assets/signing_cert.pem')
-  scheme = uri.scheme
-  host = uri.host
-  path = uri.route_from("#{scheme}://#{host}").path
-  path_split = path.split("/")
-  path_split.shift
-  filename = path_split.pop
-  # files are hosted from a1r1 starting under /usr/share/cobbler/webroot/cobbler
-  if path_split[0] == "cblr" or path_split[0] == "cobbler"
-    path_split[0] = 'cobbler'
-    path_split.unshift('webroot')
-    path_split.unshift('cobbler')
-    path_split.unshift('share')
-    path_split.unshift('usr')
-  end
-  path_split.push(filename)
-  path_split.unshift('')
-  local_dst_path = path_split.join("/")
-  local_src_path = '/etc/keystone/ssl/' + filename
-  file local_dst_path do
-    mode 0644
-    content ::File.open(local_src_path).read
-    action :create
-  done
 end
 
 if node['openstack']['auth']['strategy'] == 'pki'
@@ -76,15 +33,62 @@ if node['openstack']['auth']['strategy'] == 'pki'
   if certfile_url.nil? || keyfile_url.nil? || ca_certs_url.nil?
     Chef::Application.fatal!("You need to define certfile_url, keyfile_url, and ca_certs_url so that the keystone SSL certs/keys can be set the same across all controller nodes.  See san3.rb in openstack-base for an example of this.")
   else
+
+    # Install python keystone libraries needed for generating PKI keys
+    package "python-keystone"
+
+    # Copy keystone-manage bindary to a location where we will run it
+    remote_file '/tmp/keystone-manage' do
+      source "https://github.com/openstack/keystone/raw/stable/havana/bin/keystone-manage"
+      mode 0755
+    end
+
     # Run keystone-manage to generate PKI keys
     execute 'Generating PKI keys for Keystone' do
-      command "/tmp/keystone-manage pki_setup 0 0"
+      command "/tmp/keystone-manage pki_setup --keystone-user 0 --keystone-group 0"
       not_if { ::FileTest.exists? node['openstack']['identity']['signing']['keyfile'] }
     end
 
     # Copy PKI keys to a place where controller nodes running the openstack-identity::server recipe expect to find them over HTTP
-    copy_file_to_web_share(certfile_url)
-    copy_file_to_web_share(keyfile_url)
-    copy_file_to_web_share(ca_certs_url)
+    ruby_block "copy keystone cert/key files" do
+      block do
+
+        require 'uri'
+        require 'fileutils'
+        require 'find'
+
+        def copy_file_to_web_share(input_url)
+          uri = URI.parse(input_url)
+          scheme = uri.scheme
+          host = uri.host
+          path = uri.route_from("#{scheme}://#{host}").path
+          path_split = path.split("/")
+          path_split.shift
+          filename = path_split.pop
+          # files are hosted from a1r1 starting under /usr/share/cobbler/webroot/cobbler
+          if path_split[0] == "cblr" or path_split[0] == "cobbler"
+            path_split[0] = 'cobbler'
+            path_split.unshift('webroot')
+            path_split.unshift('cobbler')
+            path_split.unshift('share')
+            path_split.unshift('usr')
+          end
+          path_split.push(filename)
+          path_split.unshift('')
+          local_dst_path = path_split.join("/")
+          local_src_path = ''
+          Find.find('/etc/keystone/ssl') do |searchmatch|
+            local_src_path = searchmatch if searchmatch =~ /#{filename}/
+          end
+          FileUtils.cp local_src_path, local_dst_path
+          FileUtils.chmod 0644, local_dst_path
+          return
+        end
+
+        copy_file_to_web_share node['openstack']['identity']['signing']['certfile_url']
+        copy_file_to_web_share node['openstack']['identity']['signing']['keyfile_url']
+        copy_file_to_web_share node['openstack']['identity']['signing']['ca_certs_url']
+      end
+    end
   end
 end
