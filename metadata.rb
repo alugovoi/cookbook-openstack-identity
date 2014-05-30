@@ -4,11 +4,7 @@ maintainer_email 'matt@opscode.com'
 license          'Apache 2.0'
 description      'The OpenStack Identity service Keystone.'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-<<<<<<< HEAD
-version          '8.1.5'
-=======
-version          '9.2.1'
->>>>>>> 2402a8e... Since we are using PKI tokens now, the keys to validate tokens need to be the same across all keystone instances on all controllers.
+version          '8.1.6'
 
 recipe           'openstack-identity::client', 'Install packages required for keystone client'
 recipe           'openstack-identity::server', 'Installs and Configures Keystone Service'
