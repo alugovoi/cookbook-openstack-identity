@@ -62,6 +62,24 @@ execute 'Keystone: sleep' do
   action :nothing
 end
 
+#execute 'Keystone: delete services cache' do
+#  command "rm -f #{node['openstack']['compute']['api']['auth']['cache_dir']}/*
+#                 #{node['openstack']['network']['api']['auth']['cache_dir']}/*
+#                 #{node['openstack']['block-storage']['api']['auth']['cache_dir']}/*
+#                 #{node['openstack']['image']['api']['auth']['cache_dir']}/*"
+#  action :nothing
+#end
+
+bash 'Keystone: delete services cache' do
+  user "root"
+  code <<-EOH
+    rm -f #{node['openstack']['compute']['api']['auth']['cache_dir']}/*;
+    rm -f #{node['openstack']['network']['api']['auth']['cache_dir']}/*;
+    rm -f #{node['openstack']['block-storage']['api']['auth']['cache_dir']}/*;
+    rm -f #{node['openstack']['image']['api']['auth']['cache_dir']}/*
+  EOH
+end
+
 service 'keystone' do
   service_name platform_options['keystone_service']
   supports status: true, restart: true
@@ -77,11 +95,33 @@ directory '/etc/keystone' do
   mode  00700
 end
 
+<<<<<<< HEAD
+=======
+#directory node['openstack']['identity']['signing']['basedir'] do
+#  owner node['openstack']['identity']['user']
+#  group node['openstack']['identity']['group']
+#  mode  00700
+#
+#  only_if { node['openstack']['auth']['strategy'] == 'pki' }
+#end
+
+>>>>>>> 93b4688... Bring in code from upstream for importing of remote signing files for keystone.
 file '/var/lib/keystone/keystone.db' do
   action :delete
   not_if { node['openstack']['db']['identity']['service_type'] == 'sqlite' }
 end
 
+<<<<<<< HEAD
+=======
+#execute 'keystone-manage pki_setup' do
+#  user node['openstack']['identity']['user']
+#  group node['openstack']['identity']['group']
+#
+#  only_if { node['openstack']['auth']['strategy'] == 'pki' }
+#  not_if { ::FileTest.exists? node['openstack']['identity']['signing']['keyfile'] }
+#end
+
+>>>>>>> 93b4688... Bring in code from upstream for importing of remote signing files for keystone.
 if node['openstack']['auth']['strategy'] == 'pki'
   certfile_url = node['openstack']['identity']['signing']['certfile_url']
   keyfile_url = node['openstack']['identity']['signing']['keyfile_url']
@@ -139,6 +179,11 @@ if node['openstack']['auth']['strategy'] == 'pki'
       mode   00640
 
       notifies :restart, 'service[keystone]', :delayed
+<<<<<<< HEAD
+=======
+# TODO: Uncomment below line to delete stale signing keys when it only triggers on change of the MD5 sum of the ca_certs file.  Right now it deletes them on every Chef run, so it was commented out.
+#      notifies :run, 'bash[Keystone: delete services cache]', :immediately      
+>>>>>>> 93b4688... Bring in code from upstream for importing of remote signing files for keystone.
     end
   end
 end
