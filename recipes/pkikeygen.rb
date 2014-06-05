@@ -58,12 +58,17 @@ if node['openstack']['auth']['strategy'] == 'pki'
         require 'find'
 
         def copy_file_to_web_share(input_url)
+          # parse URL to try to figure out what the local path to the file is from the URL rather than making user specify another attribute
           uri = URI.parse(input_url)
           scheme = uri.scheme
           host = uri.host
+          # this will return everything after the domain part of the URL (path to file on server)
           path = uri.route_from("#{scheme}://#{host}").path
+          # split by / delimeters
           path_split = path.split("/")
+          # first entry is the array is empty; get rid of it
           path_split.shift
+          # grab the filename, which should be the last element of the array
           filename = path_split.pop
           # files are hosted from a1r1 starting under /usr/share/cobbler/webroot/cobbler
           if path_split[0] == "cblr" or path_split[0] == "cobbler"
@@ -72,14 +77,23 @@ if node['openstack']['auth']['strategy'] == 'pki'
             path_split.unshift('cobbler')
             path_split.unshift('share')
             path_split.unshift('usr')
+          # else assume file is located under /var/www
+          else
+            path_split.unshift('www')
+            path_split.unshift('var')
           end
+          # append the file name back onto the array
           path_split.push(filename)
+          # insert back the delimeter at the beginning of the array
           path_split.unshift('')
+          # join string back again with / delimeter to get the final local destination path
           local_dst_path = path_split.join("/")
+          # find the path of the source file to be copied.  Some are in /etc/keystone/ssl/certs, others are in /etc/keystone/ssl/private
           local_src_path = ''
           Find.find('/etc/keystone/ssl') do |searchmatch|
             local_src_path = searchmatch if searchmatch =~ /#{filename}/
           end
+          # copy the file now and set permissions where chef-client on control nodes can retrieve them and use them for their keystone signing keys
           FileUtils.cp local_src_path, local_dst_path
           FileUtils.chmod 0644, local_dst_path
           return
