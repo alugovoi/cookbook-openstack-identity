@@ -27,3 +27,13 @@ catalog.<%= node["openstack"]["identity"]["region"] %>.network.publicURL = <%= @
 catalog.<%= node["openstack"]["identity"]["region"] %>.network.adminURL = <%= @uris["network"].to_s %>
 catalog.<%= node["openstack"]["identity"]["region"] %>.network.internalURL = <%= @uris["network"].to_s %>
 catalog.<%= node["openstack"]["identity"]["region"] %>.network.name = Network Service
+
+catalog.<%= node["openstack"]["identity"]["region"] %>.orchestration.publicURL = <%= @uris["orchestration"].to_s %>
+catalog.<%= node["openstack"]["identity"]["region"] %>.orchestration.adminURL = <%= @uris["orchestration"].to_s %>
+catalog.<%= node["openstack"]["identity"]["region"] %>.orchestration.internalURL = <%= @uris["orchestration"].to_s %>
+catalog.<%= node["openstack"]["identity"]["region"] %>.orchestration.name = Orchestration Serivce
+
+catalog.<%= node["openstack"]["identity"]["region"] %>.metering.publicURL = <%= @uris["metering"].to_s %>
+catalog.<%= node["openstack"]["identity"]["region"] %>.metering.adminURL = <%= @uris["metering"].to_s %>
+catalog.<%= node["openstack"]["identity"]["region"] %>.metering.internalURL = <%= @uris["metering"].to_s %>
+catalog.<%= node["openstack"]["identity"]["region"] %>.metering.name = Metering Serivce

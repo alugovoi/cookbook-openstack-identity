@@ -186,7 +186,9 @@ compute_endpoint = endpoint 'compute-api'
 ec2_endpoint = endpoint 'compute-ec2-api'
 image_endpoint = endpoint 'image-api'
 network_endpoint = endpoint 'network-api'
-volume_endpoint = endpoint 'block-storage-api'
+volume_endpoint = endpoint 'volume-api'
+orchestration_endpoint = endpoint 'orchestration-api'
+metering_endpoint = endpoint 'metering-api'
 
 db_user = node['openstack']['db']['identity']['username']
 db_pass = get_password 'db', 'keystone'
@@ -247,7 +249,9 @@ uris = {
   'compute' => compute_endpoint.to_s.gsub('%25', '%'),
   'ec2' => ec2_endpoint.to_s.gsub('%25', '%'),
   'network' => network_endpoint.to_s.gsub('%25', '%'),
-  'volume' => volume_endpoint.to_s.gsub('%25', '%')
+  'volume' => volume_endpoint.to_s.gsub('%25', '%'),
+  'orchestration' => orchestration_endpoint.to_s.gsub('%25', '%'),
+  'metering' => metering_endpoint.to_s.gsub('%25', '%')
 }
 
 template '/etc/keystone/default_catalog.templates' do
