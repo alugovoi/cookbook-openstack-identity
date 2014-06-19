@@ -163,7 +163,7 @@ driver = keystone.identity.backends.<%= node["openstack"]["identity"]["identity"
 # templated driver uses different class name :(
 driver = keystone.catalog.backends.templated.TemplatedCatalog
 <% else -%>
-driver = keystone.catalog.backends.<%= node["openstack"]["identity"]["catalog"]["backend"] %>.Catalog
+driver = <%= node["openstack"]["identity"]["catalog"]["backend"] %>
 <% end -%>
 template_file = /etc/keystone/default_catalog.templates
 
