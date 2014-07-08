@@ -75,7 +75,8 @@ bash 'Keystone: delete services cache' do
     rm -f #{node['openstack']['compute']['api']['auth']['cache_dir']}/*;
     rm -f #{node['openstack']['network']['api']['auth']['cache_dir']}/*;
     rm -f #{node['openstack']['block-storage']['api']['auth']['cache_dir']}/*;
-    rm -f #{node['openstack']['image']['api']['auth']['cache_dir']}/*
+    rm -f #{node['openstack']['image']['api']['auth']['cache_dir']}/*;
+    rm -f #{node['openstack']['orchestration']['api']['auth']['cache_dir']}/*
   EOH
   action :nothing
 end
@@ -164,6 +165,7 @@ if node['openstack']['auth']['strategy'] == 'pki'
       mode   00640
 
       notifies :restart, 'service[keystone]', :delayed
+      notifies :run, 'bash[Keystone: delete services cache]', :immediately
     end
 
     remote_file node['openstack']['identity']['signing']['ca_certs'] do
@@ -173,8 +175,6 @@ if node['openstack']['auth']['strategy'] == 'pki'
       mode   00640
 
       notifies :restart, 'service[keystone]', :delayed
-# TODO: Uncomment below line to delete stale signing keys when it only triggers on change of the MD5 sum of the ca_certs file.  Right now it deletes them on every Chef run, so it was commented out.
-      notifies :run, 'bash[Keystone: delete services cache]', :immediately      
     end
   end
 end
