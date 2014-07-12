@@ -61,22 +61,16 @@ execute 'Keystone: sleep' do
   action :nothing
 end
 
-#execute 'Keystone: delete services cache' do
-#  command "rm -f #{node['openstack']['compute']['api']['auth']['cache_dir']}/*
-#                 #{node['openstack']['network']['api']['auth']['cache_dir']}/*
-#                 #{node['openstack']['block-storage']['api']['auth']['cache_dir']}/*
-#                 #{node['openstack']['image']['api']['auth']['cache_dir']}/*"
-#  action :nothing
-#end
-
 bash 'Keystone: delete services cache' do
   user "root"
   code <<-EOH
     rm -f #{node['openstack']['compute']['api']['auth']['cache_dir']}/*;
     rm -f #{node['openstack']['network']['api']['auth']['cache_dir']}/*;
+    rm -f #{node["openstack"]["network"]["api"]["agent"]["signing_dir"]}/*;
     rm -f #{node['openstack']['block-storage']['api']['auth']['cache_dir']}/*;
     rm -f #{node['openstack']['image']['api']['auth']['cache_dir']}/*;
-    rm -f #{node['openstack']['orchestration']['api']['auth']['cache_dir']}/*
+    rm -f #{node['openstack']['orchestration']['api']['auth']['cache_dir']}/*;
+    rm -f #{node["openstack"]["image"]["registry"]["auth"]["cache_dir"]}/*
   EOH
   action :nothing
 end
