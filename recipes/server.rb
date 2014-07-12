@@ -188,7 +188,7 @@ image_endpoint = endpoint 'image-api'
 network_endpoint = endpoint 'network-api'
 volume_endpoint = endpoint 'volume-api'
 orchestration_endpoint = endpoint 'orchestration-api'
-metering_endpoint = endpoint 'metering-api'
+metering_endpoint = endpoint 'telemetry-api'
 
 db_user = node['openstack']['db']['identity']['username']
 db_pass = get_password 'db', 'keystone'
