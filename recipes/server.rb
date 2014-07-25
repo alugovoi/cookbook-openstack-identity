@@ -69,7 +69,6 @@ bash 'Keystone: delete services cache' do
     rm -f #{node["openstack"]["network"]["api"]["agent"]["signing_dir"]}/*;
     rm -f #{node['openstack']['block-storage']['api']['auth']['cache_dir']}/*;
     rm -f #{node['openstack']['image']['api']['auth']['cache_dir']}/*;
-    rm -f #{node['openstack']['orchestration']['api']['auth']['cache_dir']}/*;
     rm -f #{node["openstack"]["image"]["registry"]["auth"]["cache_dir"]}/*
   EOH
   action :nothing
