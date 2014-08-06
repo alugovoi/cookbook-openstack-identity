@@ -52,7 +52,11 @@ default['openstack']['identity']['users'] = {
     'roles' => {
       'admin' => ['admin'],
       'KeystoneAdmin' => ['admin'],
-      'KeystoneServiceAdmin' => ['admin']
+      'KeystoneServiceAdmin' => ['admin'],
+      'att_staff_image_admin' => ['Image-Admin-ATT-Staff'],
+      'att_staff_image_viewer' => ['Image-View-ATT-Staff'],
+      'ccp_tenant_image_admin' => ['Image-Admin-Tenant'],
+      'ccp_tenant_image_viewer' => ['Image-View-Tenant']
     }
   }
 }
