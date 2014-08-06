@@ -73,7 +73,8 @@ default['openstack']['identity']['token']['backend'] = 'sql'
 default['openstack']['identity']['catalog']['backend'] = 'sql'
 default['openstack']['identity']['policy']['backend'] = 'sql'
 
-default['openstack']['identity']['api_v3_pipeline'] = 'access_log sizelimit url_normalize token_auth admin_token_auth xml_body json_body ec2_extension s3_extension endpoint_filter_extension service_v3'
+default['openstack']['identity']['admin_api_pipeline'] = 'access_log sizelimit url_normalize token_auth admin_token_auth xml_body json_body ec2_extension s3_extension crud_extension att_metadata admin_service'
+default['openstack']['identity']['api_v3_pipeline'] = 'access_log sizelimit url_normalize token_auth admin_token_auth xml_body json_body ec2_extension s3_extension endpoint_filter_extension att_metadata service_v3'
 
 # LDAP backend general settings
 default['openstack']['identity']['ldap']['url'] = 'ldap://localhost'
