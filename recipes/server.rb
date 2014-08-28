@@ -267,3 +267,21 @@ execute 'keystone-manage db_sync' do
 
   only_if { node['openstack']['db']['identity']['migrate'] }
 end
+
+# Install att_metadata for keystone
+
+execute 'att_metadata-migration' do
+  user node['openstack']['identity']['user']
+  group node['openstack']['identity']['group']
+  command "keystone-manage db_sync --extension att_metadata"
+
+  action :nothing
+end
+
+git "/usr/lib/python2.7/dist-packages/keystone/contrib/att_metadata" do
+  repository 'https://github.com/att-cloud/att_metadata'
+  revision 'a169667a39ff42d12aa9b3dcabd69a4ca938f89a'
+  action :checkout
+  notifies :run, "execute[att_metadata-migration]", :immediately
+  notifies :restart, 'service[keystone]', :delayed
+end

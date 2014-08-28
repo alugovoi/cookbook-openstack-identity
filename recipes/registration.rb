@@ -26,6 +26,7 @@ class ::Chef::Recipe # rubocop:disable Documentation
 end
 
 identity_admin_endpoint = endpoint 'identity-admin'
+identity_internal_endpoint = endpoint 'identity-api-internal'
 identity_endpoint = endpoint 'identity-api'
 auth_uri = ::URI.decode identity_admin_endpoint.to_s
 
@@ -110,11 +111,11 @@ openstack_identity_register 'Register Identity Service' do
 end
 
 node.set['openstack']['identity']['adminURL'] = identity_admin_endpoint.to_s
-node.set['openstack']['identity']['internalURL'] = identity_endpoint.to_s
+node.set['openstack']['identity']['internalURL'] = identity_internal_endpoint.to_s
 node.set['openstack']['identity']['publicURL'] = identity_endpoint.to_s
 
 Chef::Log.info "Keystone AdminURL: #{identity_admin_endpoint.to_s}"
-Chef::Log.info "Keystone InternalURL: #{identity_endpoint.to_s}"
+Chef::Log.info "Keystone InternalURL: #{identity_internal_endpoint.to_s}"
 Chef::Log.info "Keystone PublicURL: #{identity_endpoint.to_s}"
 
 openstack_identity_register 'Register Identity Endpoint' do
@@ -123,7 +124,7 @@ openstack_identity_register 'Register Identity Endpoint' do
   service_type 'identity'
   endpoint_region node['openstack']['identity']['region']
   endpoint_adminurl node['openstack']['identity']['adminURL']
-  endpoint_internalurl node['openstack']['identity']['adminURL']
+  endpoint_internalurl node['openstack']['identity']['internalURL']
   endpoint_publicurl node['openstack']['identity']['publicURL']
 
   action :create_endpoint
