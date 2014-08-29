@@ -175,6 +175,8 @@ end
 bind_endpoint = endpoint 'identity-bind'
 identity_admin_endpoint = endpoint 'identity-admin'
 identity_endpoint = endpoint 'identity-api'
+identity_internal_endpoint = endpoint 'identity-api-internal'
+identity_public_internal_endpoint = endpoint 'identity-api-public-internal'
 compute_endpoint = endpoint 'compute-api'
 ec2_endpoint = endpoint 'compute-ec2-api'
 image_endpoint = endpoint 'image-api'
@@ -214,10 +216,10 @@ template '/etc/keystone/keystone.conf' do
     bind_address: bind_address,
     bootstrap_token: bootstrap_token,
     memcache_servers: memcache_servers,
-    public_endpoint: public_endpoint,
-    public_port: bind_endpoint.port || identity_endpoint.port,
-    admin_endpoint: admin_endpoint,
-    admin_port: identity_admin_endpoint.port,
+    identity_public_internal_endpoint: identity_public_internal_endpoint,
+    public_port: bind_endpoint.port || identity_public_internal_endpoint.port,
+    identity_internal_endpoint: identity_internal_endpoint,
+    admin_port: identity_internal_endpoint.port,
     ldap: node['openstack']['identity']['ldap'],
     token_expiration: node['openstack']['identity']['token']['expiration']
   )

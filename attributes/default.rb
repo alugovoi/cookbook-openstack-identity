@@ -33,6 +33,7 @@ default['credentials']['EC2']['admin']['access'] = ''
 default['credentials']['EC2']['admin']['secret'] = ''
 
 default['openstack']['endpoints']['identity-api-internal']['uri'] = node['openstack']['endpoints']['identity-api']['uri']
+default['openstack']['endpoints']['identity-api-public-internal']['uri'] = node['openstack']['endpoints']['identity-api']['uri']
 
 default['openstack']['identity']['verbose'] = 'False'
 default['openstack']['identity']['debug'] = 'False'
