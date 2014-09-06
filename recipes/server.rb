@@ -64,12 +64,13 @@ end
 bash 'Keystone: delete services cache' do
   user "root"
   code <<-EOH
-    rm -f #{node['openstack']['compute']['api']['auth']['cache_dir']}/*;
-    rm -f #{node['openstack']['network']['api']['auth']['cache_dir']}/*;
-    rm -f #{node["openstack"]["network"]["api"]["agent"]["signing_dir"]}/*;
-    rm -f #{node['openstack']['block-storage']['api']['auth']['cache_dir']}/*;
-    rm -f #{node['openstack']['image']['api']['auth']['cache_dir']}/*;
-    rm -f #{node["openstack"]["image"]["registry"]["auth"]["cache_dir"]}/*
+    rm -f #{node['openstack']['compute']['api']['auth']['cache_dir']}/* || true;
+    rm -f #{node['openstack']['network']['api']['auth']['cache_dir']}/* || true;
+    rm -f #{node["openstack"]["network"]["api"]["agent"]["signing_dir"]}/* || true;
+    rm -f #{node['openstack']['block-storage']['api']['auth']['cache_dir']}/* || true;
+    rm -f #{node['openstack']['image']['api']['auth']['cache_dir']}/* || true;
+    rm -f #{node["openstack"]["image"]["registry"]["auth"]["cache_dir"]}/* || true;
+    rm -f #{node['openstack']['orchestration']['api']['auth']['cache_dir']}/* || true
   EOH
   action :nothing
 end
@@ -175,6 +176,8 @@ end
 bind_endpoint = endpoint 'identity-bind'
 identity_admin_endpoint = endpoint 'identity-admin'
 identity_endpoint = endpoint 'identity-api'
+identity_internal_endpoint = endpoint 'identity-api-internal'
+identity_public_internal_endpoint = endpoint 'identity-api-public-internal'
 compute_endpoint = endpoint 'compute-api'
 ec2_endpoint = endpoint 'compute-ec2-api'
 image_endpoint = endpoint 'image-api'
@@ -199,10 +202,10 @@ memcache_servers = memcached_servers.join ','  # from openstack-common lib
 # These configuration endpoints must not have the path (v2.0, etc)
 # added to them, as these values are used in returning the version
 # listing information from the root / endpoint.
-ie = identity_endpoint
-public_endpoint = "#{ie.scheme}://#{ie.host}:#{ie.port}/"
-ae = identity_admin_endpoint
-admin_endpoint = "#{ae.scheme}://#{ae.host}:#{ae.port}/"
+pi = identity_public_internal_endpoint
+identity_public_internal_host = "#{pi.scheme}://#{pi.host}:#{pi.port}/"
+ie = identity_internal_endpoint
+identity_internal_host = "#{ie.scheme}://#{ie.host}:#{ie.port}/"
 
 template '/etc/keystone/keystone.conf' do
   source 'keystone.conf.erb'
@@ -214,10 +217,10 @@ template '/etc/keystone/keystone.conf' do
     bind_address: bind_address,
     bootstrap_token: bootstrap_token,
     memcache_servers: memcache_servers,
-    public_endpoint: public_endpoint,
-    public_port: bind_endpoint.port || identity_endpoint.port,
-    admin_endpoint: admin_endpoint,
-    admin_port: identity_admin_endpoint.port,
+    identity_public_internal_host: identity_public_internal_host,
+    public_port: bind_endpoint.port || identity_public_internal_endpoint.port,
+    identity_internal_host: identity_internal_host,
+    admin_port: identity_internal_endpoint.port,
     ldap: node['openstack']['identity']['ldap'],
     token_expiration: node['openstack']['identity']['token']['expiration']
   )
@@ -266,4 +269,22 @@ execute 'keystone-manage db_sync' do
   group node['openstack']['identity']['group']
 
   only_if { node['openstack']['db']['identity']['migrate'] }
+end
+
+# Install att_metadata for keystone
+
+execute 'att_metadata-migration' do
+  user node['openstack']['identity']['user']
+  group node['openstack']['identity']['group']
+  command "keystone-manage db_sync --extension att_metadata"
+
+  action :nothing
+end
+
+git "/usr/lib/python2.7/dist-packages/keystone/contrib/att_metadata" do
+  repository 'https://github.com/att-cloud/att_metadata'
+  revision 'a169667a39ff42d12aa9b3dcabd69a4ca938f89a'
+  action :checkout
+  notifies :run, "execute[att_metadata-migration]", :immediately
+  notifies :restart, 'service[keystone]', :delayed
 end
