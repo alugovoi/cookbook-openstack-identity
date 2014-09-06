@@ -13,8 +13,8 @@ log_config = /etc/openstack/logging.conf
 <% else %>
 log_file = /var/log/keystone/keystone.log
 <% end %>
-public_endpoint = <%= @identity_public_internal_endpoint %>
-admin_endpoint = <%= @identity_internal_endpoint %>
+public_endpoint = <%= @identity_public_internal_host %>
+admin_endpoint = <%= @identity_internal_host %>
 
 <% if @memcache_servers -%>
 [memcache]
