@@ -61,20 +61,6 @@ execute 'Keystone: sleep' do
   action :nothing
 end
 
-bash 'Keystone: delete services cache' do
-  user "root"
-  code <<-EOH
-    rm -f #{node['openstack']['compute']['api']['auth']['cache_dir']}/* || true;
-    rm -f #{node['openstack']['network']['api']['auth']['cache_dir']}/* || true;
-    rm -f #{node["openstack"]["network"]["api"]["agent"]["signing_dir"]}/* || true;
-    rm -f #{node['openstack']['block-storage']['api']['auth']['cache_dir']}/* || true;
-    rm -f #{node['openstack']['image']['api']['auth']['cache_dir']}/* || true;
-    rm -f #{node["openstack"]["image"]["registry"]["auth"]["cache_dir"]}/* || true;
-    rm -f #{node['openstack']['orchestration']['api']['auth']['cache_dir']}/* || true
-  EOH
-  action :nothing
-end
-
 service 'keystone' do
   service_name platform_options['keystone_service']
   supports status: true, restart: true
@@ -159,7 +145,6 @@ if node['openstack']['auth']['strategy'] == 'pki'
       mode   00640
 
       notifies :restart, 'service[keystone]', :delayed
-      notifies :run, 'bash[Keystone: delete services cache]', :immediately
     end
 
     remote_file node['openstack']['identity']['signing']['ca_certs'] do
